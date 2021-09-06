@@ -61,6 +61,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.LocalDate;
 
+import br.com.alura.carteira.dao.TransacaoDao;
 import br.com.alura.carteira.modelo.TipoTransacao;
 import br.com.alura.carteira.modelo.Transacao;
 
@@ -71,28 +72,21 @@ public class TesteInsereTransacao {
 			String url = "jdbc:mysql://localhost:3306/carteira?useTimezone=true&serverTimezone=UTC";
 			String username = "root";
 			String password = "admin";
-			Connection conexao = DriverManager.getConnection(url, username, password);
-
-			Transacao t = new Transacao(
-					"ITSA4", 
+			Connection conexao = DriverManager.getConnection(url,username,password);
+			TransacaoDao dao = new TransacaoDao(conexao);
+			
+			
+			Transacao transacao = new Transacao("XPTO2",
 					LocalDate.now(),
-					new BigDecimal("52.50"),
-					100,
+					new BigDecimal("333"),
+					200,
 					TipoTransacao.COMPRA);
 			
-			String sql = "insert into transacoes(ticker, preco, quantidade, data, tipo) values(?,?,?,?,?)";
-			PreparedStatement ps = conexao.prepareStatement(sql);
-			ps.setString(1, t.getTicker());
-			ps.setBigDecimal(2, t.getPreco());
-			ps.setInt(3, t.getQuantidade());
-			ps.setDate(4, Date.valueOf(t.getData()));
-			ps.setString(5, t.getTipo().toString());
-
-			ps.execute();
-			
-		} catch (Exception e) {
-			System.out.println("Erro ao conectar com MySQL!");
+			dao.cadastrar(transacao);
+		}catch (Exception e) {
+			System.out.println("Ocorreu um erro");
 		}
+		
 	}
 
 }
