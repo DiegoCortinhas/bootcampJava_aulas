@@ -2,16 +2,19 @@ package br.com.alura.carteira.servlet;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import br.com.alura.carteira.dao.TransacaoDao;
+import br.com.alura.carteira.factory.ConnectionFactory;
 import br.com.alura.carteira.modelo.TipoTransacao;
 import br.com.alura.carteira.modelo.Transacao;
 
@@ -21,20 +24,27 @@ import br.com.alura.carteira.modelo.Transacao;
 @WebServlet ("/transacoes")
 public class TransacoesServlet extends HttpServlet{
 	
-	private List<Transacao> transacoes = new ArrayList<>();
+	//private List<Transacao> transacoes = new ArrayList<>();
+	
+	private TransacaoDao dao;
+	
+	//nao podemos receber parametros no construtor da classe Servlet
+	//porque quem chama o servlet é o Tomcat e ele nao tem como chamar um novo TransacaoDao
+	public TransacoesServlet() {
+		
+		this.dao = new TransacaoDao(new ConnectionFactory().getConnection());
+	}
 	
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
 		
-		
 		//encaminhando o List para o JSP
-		req.setAttribute("transacoes", transacoes);
+		req.setAttribute("transacoes", dao.listar());
 		
 		//joga as infos do codigo java para a pagina JSP exibir
 		req.getRequestDispatcher("/WEB-INF/jsp/transacoes.jsp")
 		.forward(req, res);
 		
-	
 	}
 	
 	
@@ -64,7 +74,7 @@ public class TransacoesServlet extends HttpServlet{
 					quantidade, 
 					tipo);
 			
-			transacoes.add(transacao);
+			dao.cadastrar(transacao);
 			
 			//como se estivesse fazendo uma requisicao Get para transacoes
 			resp.sendRedirect("transacoes");
